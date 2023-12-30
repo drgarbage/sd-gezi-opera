@@ -1,0 +1,274 @@
+<html>
+
+<head>
+    <title>國光劇團</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #container {
+            position: cover;
+            width: 100%;
+            height: 100%;
+            background-color: gray;
+        }
+
+        #head {
+            position: relative;
+            width: 100%;
+            height: 20%;
+        }
+
+        #moja {
+            position: relative;
+            width: 100%;
+            height: 5%;
+        }
+
+        #face {
+            position: relative;
+            width: 100%;
+            height: 40%;
+        }
+
+        #head_txt {
+            position: center;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 10%;
+            color: white;
+            /* 替换 "Your Font" 为您想要使用的字体 */
+            font-weight: bold;
+        }
+
+        #head_txt h1 {
+            display: flex;
+            justify-content: center;
+            /* 水平居中对齐 */
+            align-items: center;
+            /* 垂直居中对齐 */
+            height: 10vh;
+            /* 设置容器高度，可以根据需要调整 */
+        }
+
+        .red-text {
+            color: rgb(255, 253, 109);
+        }
+
+
+
+
+
+        .button-container {
+            display: flex;
+            gap: 5vw;
+            /* 设置按钮之间的间隔为5vw */
+            justify-content: center;
+        }
+
+        .custom-button {
+            padding: 10px 50px;
+            font-weight: bold;
+            border-radius: 10px;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, background-color 0.2s;
+            background-color: #3498db;
+
+            &:hover {
+                background-color: #2980b9;
+                transform: scale(1.1);
+            }
+
+            &:active {
+                transform: scale(0.9);
+            }
+        }
+
+        .custom-file-upload {
+            padding: 10px 30px;
+            /* 设置按钮内边距以增加高度和宽度 */
+            font-weight: bold;
+            /* 设置按钮文字为粗体 */
+            border-radius: 10px;
+            /* 圆角边框 */
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            /* 
+            添加阴影效果 */
+            transition: transform 0.2s, background-color 0.2s;
+            /* 添加平滑的过渡效果 */
+
+            /* 默认状态 */
+            background-color: #3498db;
+            /* 按钮背景颜色 */
+            color: #fff;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #2980b9;
+            transform: scale(1.1);
+        }
+
+        /* 隐藏原始的文件上传按钮 */
+        #imageInput {
+            display: none;
+        }
+
+        #message {
+            margin-top: 20px;
+            /* 设置上边距以增加间距 */
+            text-align: center;
+            /* 设置文本居中对齐 */
+            font-weight: bold;
+            /* 设置文字为粗体 */
+        }
+
+        #imagePreview {
+            position: relative;
+            width: 100%;
+            height: 50%;
+        }
+
+        /* 遮罩层样式 */
+        .overlay {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* 半透明黑色背景 */
+        }
+
+        /* 弹出窗口样式 */
+        .popup {
+            display: block;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+
+        .popup h1 {
+            display: flex;
+            justify-content: center;
+            /* 水平居中对齐 */
+            align-items: center;
+            /* 垂直居中对齐 */
+            height: 10vh;
+            /* 设置容器高度，可以根据需要调整 */
+        }
+
+        /* 关闭按钮样式 */
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        .agree_disagree {
+            display: flex;
+            justify-content: center;
+            /* 
+            gap: 5vw;
+            水平居中对齐 */
+            align-items: center;
+            /* 垂直居中对齐 */
+            height: 5vh;
+            /* 设置容器高度，可以根据需要调整 */
+            /*width: 50%;*/
+            border-radius: 10px;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, background-color 0.2s;
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        .agree_disagree:hover {
+
+            border-radius: 10px;
+            background-color: #2980b9;
+            transform: scale(1.1);
+        }
+
+        .block {
+            width: 5vw;
+            height: 3vh;
+        }
+
+        .popup_upload {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="head">
+            <img src="clientphoto/head.jpg" alt="國光劇團" width="100%" height="100%">
+        </div>
+        <div id="moja">
+            <img src="clientphoto/moja.jpg" alt="國光劇團" width="100%" height="100%">
+        </div>
+        <div id="face">
+            <img src="clientphoto/face.jpg" alt="國光劇團" width="100%" height="100%">
+        </div>
+        <div id="head_txt">
+            <h1>請上傳<span class="red-text">'臉部'</span>照片</h1>
+        </div>
+        <div id="button_container">
+            <div class="button-container">
+                <label for="imageInput" class="custom-file-upload">
+                    <input type="file" id="imageInput" accept="image/*" required>
+                    選擇照片
+                </label>
+                <div class="custom-button" id="uploadButton">上傳圖片</div>
+                <div id="message"></div>
+            </div>
+            <div id="imagePreview">
+                <img id="previewImage" src="#" alt="預覽" width="100%" height="auto">
+            </div>
+
+            
+
+            <!--input type="file" id="imageInput" accept="image/*" required>
+            <button id="uploadButton">上傳</button>
+            <div id="message"></div-->
+        </div>
+
+        <div class="overlay" id="overlay"></div>
+        <div class="popup_upload" id="popup_upload">
+            <!--span class="close" onclick="closePopup()">&times;</span-->
+
+        </div>
+        <div class="popup" id="popup">
+            <span class="close" onclick="closePopup()">&times;</span>
+            <h1>隱私權說明</h1>
+            <h2>本網站將嚴格遵守您的指示，關於照片之處理事宜，特此承諾，凡換臉照片，皆將於收到後的24小時後，永久性刪除，且絕不會將其應用於任何其他用途。」</h2>
+            <div id="agree" class="agree_disagree">
+                <h1>同意</h1>
+            </div>
+            <div class="block"></div>
+            <div id="disagree" class="agree_disagree">
+                <h1>不同意</h1>
+            </div>
+        </div>
+        
+    </div>
+    <script src="client_js.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹出视窗示例</title>
+    <style>
+        /* CSS 样式直接内嵌在 HTML 中 */
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 半透明的黑色背景 */
+            z-index: 2; /* 确保遮罩层在弹出视窗之上 */
+        }
+
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            z-index: 3; /* 弹出视窗在遮罩层之上 */
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay" onclick="closePopup()"></div>
+    <div id="popup">
+        <h2>弹出视窗</h2>
+        <p>这是弹出视窗的内容。</p>
+        <button onclick="closePopup()">关闭</button>
+    </div>
+    <button onclick="openPopup()">显示弹出视窗</button>
+    <script>
+        // JavaScript 直接内嵌在 HTML 中
+        function openPopup() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('popup').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        // 在弹出视窗外点击遮罩层或 div 时关闭弹出视窗
+        document.getElementById('overlay').addEventListener('click', closePopup);
+    </script>
+</body>
+</html>

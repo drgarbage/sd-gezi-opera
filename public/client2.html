@@ -1,0 +1,367 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="css/default.css" rel="stylesheet">
+</head>
+<body class="overflow-hidden">
+  <div class="w-screen h-dvh flex flex-col bg-primary">
+    <div class="grow relative flex flex-row items-center p-4">
+      <video id="video" class="preview flip-h" playsinline></video>
+      <img id="source" class="preview" alt="Source Image" />
+      <img 
+        id="btnFlip"
+        class="absolute top-4 right-4" 
+        src="https://api.iconify.design/eva/flip-2-fill.svg?color=white&width=44" 
+        onclick="onFlipCamera()"
+        />
+      <img
+        id="btnReCapture"
+        class="absolute top-4 right-4"
+        src="https://api.iconify.design/material-symbols/close.svg?color=white&width=44"
+        onclick="onReCapture()" 
+        />
+      <div id="loading" class="absolute left-0 preview flex flex-row items-center justify-center">
+        <div class="lds-ripple"><div></div><div></div></div>
+      </div>
+    </div>
+    <div class="w-screen overflow-x-scroll bg-white mb-[1px]">
+      <div id="avatarList" class="flex flex-row flex-nowrap m-4 bre"></div>
+    </div>
+    <div class="flex flex-row justify-between bg-white items-center">
+      <div class="w-16 aspect-square"></div>
+      <div id="btnCapture" class="button" onclick="onTakePhoto()">
+        <img class="grow m-auto" src="https://api.iconify.design/majesticons/camera-line.svg?color=%23243c5a&width=48" alt="capture" />
+      </div>
+      <div id="btnGenerate" class="button" onclick="onGenerate()">GENERATE</div>
+      <div class="w-16 aspect-square flex flex-row items-center">
+        <img id="btnLoadPhoto" class="m-auto mr-4" src="https://api.iconify.design/tabler/photo.svg?color=%23243c5a&width=36" alt="load photo" onclick="file.click()" />
+        <input id="file" type="file" style="display: none;" onchange="onLoadPhoto()" />
+      </div>
+    </div>
+  </div>
+
+  <div id="modal" class="modal bg-black opacity-40 z-10"></div>
+
+  <div id="dlgResult" class="modal p-4">
+    <div class="dialog relative">
+      <img id="result" alt="" />
+      <div class="flex flex-row items-center justify-end">
+        <div class="grow p-4">下載或分享成果</div>
+        <img id="btnSave" class="mr-2" src="https://api.iconify.design/lucide/save.svg?color=%23243c5a&width=34" alt="load photo" onclick="file.click()" />
+        <img id="btnShare" class="mr-4" src="https://api.iconify.design/ri/share-line.svg?color=%23243c5a&width=34" alt="load photo" onclick="file.click()" />
+      </div>
+      <img
+        id="btnClearResult"
+        class="absolute top-2 right-2"
+        src="https://api.iconify.design/material-symbols/close.svg?color=white&width=44"
+        onclick="onClearResult()" 
+        />
+    </div>
+  </div>
+
+  <div id="dlgTerm" class="modal p-4">
+    <div class="dialog pb-4">
+      <img src="/clientphoto/head.jpg" />
+      <img src="/clientphoto/face.jpg" />
+      <img src="/clientphoto/moja.jpg" />
+      <div class="p-4">
+        <h1 class="text-center text-xl font-bold">隱私權聲明</h1>
+        <p>本網站將嚴格遵守您的指示，關於照片之處理事宜，特此承諾，凡換臉照片，皆將於收到後的24小時後，永久性刪除，且絕不會將其應用於任何其他用途。</p>
+      </div>
+      <div class="button p-4 text-blue-600" onclick="onDeny()">不同意</div>
+      <div class="button p-4 text-blue-600" onclick="onAccept()">同意</div>
+    </div>
+  </div>
+
+  <script src="js/sdapi.js"></script>
+  <script src="js/utils.js"></script>
+
+  <script>
+      
+      // capture image ui http://localhost:7860
+      const avatar = document.getElementById('avatar');
+      const video = document.getElementById('video');
+      const avatarList = document.getElementById('avatarList');
+      const source = document.getElementById('source');
+      const file = document.getElementById('file');
+      const btnCapture = document.getElementById('btnCapture');
+      const btnFlip = document.getElementById('btnFlip');
+      const btnReCapture = document.getElementById('btnReCapture');
+      const btnLoadPhoto = document.getElementById('btnLoadPhoto');
+      const btnGenerate = document.getElementById('btnGenerate');
+      const modal = document.getElementById('modal');
+      const dlgTerm = document.getElementById('dlgTerm');
+      const dlgResult = document.getElementById('dlgResult');
+
+      const avatarFiles = [...new Array(23).keys()].map(i => `/photos/image_${i+1}.jpg`);
+      
+      // result dialog
+      const dialog = document.getElementById('dialog');
+      const loading = document.getElementById('loading');
+      const result = document.getElementById('result');
+
+      // live
+      var _cameraConnected = false;
+
+      var state = {
+        stage: 'prepare', // prepare | editing | generating | preview
+        facingMode: 'user', // user | environment
+        width: 768,
+        height: 768,
+        term: false,
+        selected: null,
+        sourceImage: null,
+        resultImage: null,
+        loading: false,
+      }
+
+      function setState(nextState) {
+        const {stage, facingMode, term, selected, sourceImage, resultImage } = nextState;
+
+        if(stage === 'prepare') {
+          // handle term
+          dlgTerm.style.display = 'flex';
+          modal.style.display = 'flex';
+
+          loading.style.display = 'none';
+          video.style.display = 'none';
+          source.style.display = 'none';
+          btnCapture.style.display = 'none';
+          btnFlip.style.display = 'none';
+          btnReCapture.style.display = 'none';
+          btnLoadPhoto.style.display = 'none';
+          btnGenerate.style.display = 'none';
+          dlgResult.style.display = 'none';
+        }
+
+        if(stage === 'denied') {
+          dlgTerm.style.display = 'none';
+          modal.style.display = 'none';
+          video.style.display = 'none';
+          source.style.display = 'none';
+          btnCapture.style.display = 'none';
+          btnFlip.style.display = 'none';
+          btnReCapture.style.display = 'none';
+          btnLoadPhoto.style.display = 'none';
+          btnGenerate.style.display = 'none';
+          dlgResult.style.display = 'none';
+          loading.style.display = 'none';
+        }
+
+        if(stage === 'editing') {
+          dlgTerm.style.display = 'none';
+          dlgResult.style.display = 'none';
+          modal.style.display = 'none';
+          loading.style.display = 'none';
+
+          // handle video
+          if(term && sourceImage === null && video.isConnected) {
+            connectCamera({facingMode, width: 768, height: 768 });
+          } else {
+            disconnectCamera();
+          }
+          video.className = facingMode === 'user' ? 'preview flip-h' : 'preview';
+          video.style.display = term && sourceImage === null ? 'inherit' : 'none';
+          btnCapture.style.display = term && sourceImage === null ? 'block' : 'none';
+          btnFlip.style.display = term && sourceImage === null ? 'block' : 'none';
+          btnLoadPhoto.style.display = term && sourceImage === null ? 'block' : 'none';
+          source.src = sourceImage;
+          source.style.display = sourceImage !== null ? 'inherit' : 'none';
+          btnReCapture.style.display = sourceImage !== null ? 'inherit' : 'none';
+          btnGenerate.style.display = sourceImage !== null ? 'block' : 'none';
+        }
+        
+        // handle selection
+        avatarList.childNodes.forEach(child => 
+          child.className = child.src === selected ? 
+            'avatar selected' : 'avatar');
+        
+        // handle loading
+        if(stage === 'generating') {
+          loading.style.display = 'flex';
+          dlgTerm.style.display = 'none';
+          dlgResult.style.display = 'none';
+          modal.style.display = 'none';
+          video.style.display = 'none';
+          btnCapture.style.display = 'none';
+          btnFlip.style.display = 'none';
+          btnLoadPhoto.style.display = 'none';
+          btnGenerate.style.display = 'none';
+          btnReCapture.style.display = 'none';
+          disconnectCamera();
+          source.src = sourceImage;
+          source.style.display = sourceImage !== null ? 'inherit' : 'none';
+        }
+
+        // handle result
+        if(stage === 'preview') {
+          dlgResult.style.display = 'flex';
+          modal.style.display = 'flex';
+          loading.style.display = 'none';
+          dlgTerm.style.display = 'none';
+          video.style.display = 'none';
+          btnCapture.style.display = 'none';
+          btnFlip.style.display = 'none';
+          btnLoadPhoto.style.display = 'none';
+          btnGenerate.style.display = 'none';
+          btnReCapture.style.display = 'none';
+          disconnectCamera();
+          result.src = resultImage;
+          source.src = sourceImage;
+          source.style.display = sourceImage !== null ? 'inherit' : 'none';
+        }
+
+        state = nextState;
+      }
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        initUI();
+        setState({...state});
+      });
+
+      function initUI() {
+        let selectedAvatar = null;
+        avatarFiles.forEach((path, index) => {
+          const img = document.createElement('img');
+          img.src = path;
+          img.className = 'avatar';
+          img.alt = 'avatar';
+          img.onclick = function (e) {
+            setState({...state, 
+              selected: e.target.src,
+              width: e.target.naturalWidth,
+              height: e.target.naturalHeight
+            });
+          };
+          avatarList.appendChild(img);
+
+          if(index === 0)
+            selectedAvatar = img.src;
+        });
+        setState({...state, selected: selectedAvatar});
+      }
+
+      function connectCamera(config) {
+        if(_cameraConnected) return;
+          
+        const mediaConfig = { video: config };
+        
+        navigator
+            .mediaDevices
+            .getUserMedia(mediaConfig)
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+                _cameraConnected = true;
+            })
+            .catch(err => {
+              alert('Camera not available.');
+              console.error("Error: " + err);
+              _cameraConnected = false;
+            });
+      }
+
+      function disconnectCamera(config) {
+        video.pause();
+        _cameraConnected = false;
+      }
+
+      function onAccept() { setState({...state, term: true, stage: 'editing'})}
+      function onDeny() { setState({...state, term: false, stage: 'denied' })}
+
+      function onTakePhoto() {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context = canvas.getContext("2d");
+        if(state.facingMode === 'user') {
+          context.translate(canvas.width, 0);
+          context.scale(-1,1);
+        }
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const sourceImage = canvas.toDataURL('image/png');
+        setState({...state, sourceImage });
+      }
+
+      function onFlipCamera() {
+        disconnectCamera();
+        setState({...state, facingMode: state.facingMode === 'user' ? 'environment' : 'user'});
+      }
+
+      function onReCapture() {
+        setState({...state, sourceImage: null});
+      }
+
+      async function onLoadPhoto() {
+        const faceImageFile = file.files[0];
+        const sourceImage = await file2b64Image(faceImageFile);
+        setState({...state, sourceImage});
+      }
+
+      async function onGenerate() {
+          setState({...state, stage: 'generating'});
+          
+          const faceImage = state.sourceImage;
+          const characterImage = await url2b64Image(state.selected);
+          const configs = {
+              width: state.width,
+              height: state.height,
+              denoising_strength: 0,
+              alwayson_scripts: {
+                  reactor: {
+                      args: [
+                          faceImage,      // #0
+                          true,           // #1 Enable ReActor
+                          '0',            // #2 Comma separated face number(s) from swap-source image
+                          '0',            // #3 Comma separated face number(s) for target image (result)
+                          "",             // #4 model path
+                          'CodeFormer',   // #4 Restore Face: None; CodeFormer; GFPGAN
+                          1,              // #5 Restore visibility value
+                          true,           // #7 Restore face -> Upscale
+                          'None',         // #8 Upscaler (type 'None' if doesn't need), see full list here: http://127.0.0.1:7860/sdapi/v1/script-info -> reactor -> sec.8
+                          1,              // #9 Upscaler scale value
+                          1,              // #10 Upscaler visibility (if scale = 1)
+                          false,          // #11 Swap in source image
+                          true,           // #12 Swap in generated image
+                          0,              // #13 Console Log Level (0 - min, 1 - med or 2 - max)
+                          0,              // #14 Gender Detection (Source) (0 - No, 1 - Female Only, 2 - Male Only)
+                          0,              // #15 Gender Detection (Target) (0 - No, 1 - Female Only, 2 - Male Only)
+                          false,          // #16 Save the original image(s) made before swapping
+                          0.8,            // #17 CodeFormer Weight (0 = maximum effect, 1 = minimum effect), 0.5 - by default
+                          false,          // #18 Source Image Hash Check, True - by default
+                          false,          // #19 Target Image Hash Check, False - by default
+                          "CUDA",         // #20 CPU or CUDA (if you have it), CPU - by default
+                          true,           // #21 Face Mask Correction
+                          0,              // #22 Select Source, 0 - Image, 1 - Face Model, 2 - Source Folder
+                          "",             // #23 Filename of the face model (from "models/reactor/faces"), e.g. elena.safetensors, don't forger to set #22 to 1
+                      ]
+                  }
+              }
+          }
+
+          const sdapi = new SDAPI('http://ai.printii.com');
+          const [ swappedImage ] = await sdapi.img2img(characterImage, configs);
+          const [ resultb64Image ] = await sdapi.img2img(swappedImage, { 
+              width: state.width,
+              height: state.height,
+              prompt: 'anime style, 2d, 2.5d, realistic sketch, lineart, masterpiece',
+              negative_prompt: '(worse quality:2), (bad quality:2), (normal quality:1.5), 3d',
+              cfg_scale: 9,
+              denoising_strength: 0.3,
+              // override_settings: {
+              //   sd_model_checkpoint: ''
+              // }
+          });
+          const resultImage = b64Raw2ImageURL(resultb64Image);
+
+          setState({...state, stage: 'preview', resultImage});
+      }
+
+      function onClearResult() {
+        setState({...state, stage: 'editing', resultImage: null });
+      }
+  </script>
+</body>
+</html>

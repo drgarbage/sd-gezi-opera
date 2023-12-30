@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圖片上傳</title>
+</head>
+<body>
+    <h1>上傳圖片</h1>
+    <input type="file" id="imageInput" accept="image/*" required>
+    <button id="uploadButton">上傳</button>
+    
+    <div id="message"></div>
+    
+    <script>
+        document.getElementById('uploadButton').addEventListener('click', () => {
+            const fileInput = document.getElementById('imageInput');
+            const messageDiv = document.getElementById('message');
+            
+            if (fileInput.files.length > 0) {
+                const imageFile = fileInput.files[0];
+                const formData = new FormData();
+                formData.append('image', imageFile);
+                //127.0.0.1:3001/upload-image
+                fetch('/upload-image', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(message => {
+                    messageDiv.textContent = message;
+                    fileInput.value = ''; // 清空輸入欄
+                })
+                .catch(error => {
+                    console.error('上傳失敗:', error);
+                    messageDiv.textContent = '上傳失敗';
+                });
+            } else {
+                messageDiv.textContent = '請選擇一張圖片來上傳。';
+            }
+        });
+    </script>
+</body>
+</html>
