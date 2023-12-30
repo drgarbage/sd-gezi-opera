@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+
+  sex365:
+    image: drgarbage/sd-gezi-opera:latest
+    container_name: sd-gezi-opera
+    ports:
+      - "3001:3001"
+    restart: always
