@@ -10,7 +10,8 @@
     "tailwindcss": "^3.4.0"
   },
   "scripts": {
+    "start": "node server.js",
     "tailwind:build" : "npx tailwindcss -i ./src/input.css -o ./public/css/default.css --watch",
-    "docker:build": "docker buildx build --platform linux/amd64,linux/arm64 -t drgarbage/sex365:latest . --push"
+    "docker:build": "docker buildx build --platform linux/amd64,linux/arm64 -t drgarbage/sd-gezi-opera:latest . --push"
   }
 }

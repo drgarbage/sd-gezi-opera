@@ -2,7 +2,7 @@ version: '3'
 
 services:
 
-  sex365:
+  sd-gezi-opera:
     image: drgarbage/sd-gezi-opera:latest
     container_name: sd-gezi-opera
     ports:

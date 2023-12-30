@@ -7,9 +7,15 @@
 </head>
 <body class="overflow-hidden">
   <div class="w-screen h-dvh flex flex-col bg-primary">
-    <div class="grow relative flex flex-row items-center p-4">
-      <video id="video" class="preview flip-h" playsinline></video>
-      <img id="source" class="preview" alt="Source Image" />
+    <div class="grow relative flex flex-row items-center justify-center p-4">
+      <div id="btnManual" class="absolute preview z-10 w-48 flex flex-col items-center justify-center border-2 border-solid border-white" onclick="file.click()">
+        <img src="https://api.iconify.design/tabler/photo.svg?color=white&width=64" alt="load photo" />
+        <div class="text-white text-lg mt-4">
+          點此上傳照片
+        </div>
+      </div>
+      <video id="video" class="preview z-20 flip-h" playsinline></video>
+      <img id="source" class="preview z-20" alt="Source Image" />
       <img 
         id="btnFlip"
         class="absolute top-4 right-4" 
@@ -22,11 +28,11 @@
         src="https://api.iconify.design/material-symbols/close.svg?color=white&width=44"
         onclick="onReCapture()" 
         />
-      <div id="loading" class="absolute left-0 preview flex flex-row items-center justify-center">
+      <div class="loading absolute z-50 left-0 preview flex flex-row items-center justify-center">
         <div class="lds-ripple"><div></div><div></div></div>
       </div>
     </div>
-    <div class="w-screen overflow-x-scroll bg-white mb-[1px]">
+    <div class="rounded-t-xl w-screen overflow-x-scroll bg-white mb-[1px]">
       <div id="avatarList" class="flex flex-row flex-nowrap m-4 bre"></div>
     </div>
     <div class="flex flex-row justify-between bg-white items-center">
@@ -34,7 +40,8 @@
       <div id="btnCapture" class="button" onclick="onTakePhoto()">
         <img class="grow m-auto" src="https://api.iconify.design/majesticons/camera-line.svg?color=%23243c5a&width=48" alt="capture" />
       </div>
-      <div id="btnGenerate" class="button" onclick="onGenerate()">GENERATE</div>
+      <div id="btnGenerate" class="button text-blue-600 font-bold" onclick="onGenerate()">製作劇照</div>
+      <div class="loading">劇照繪製中...</div>
       <div class="w-16 aspect-square flex flex-row items-center">
         <img id="btnLoadPhoto" class="m-auto mr-4" src="https://api.iconify.design/tabler/photo.svg?color=%23243c5a&width=36" alt="load photo" onclick="file.click()" />
         <input id="file" type="file" style="display: none;" onchange="onLoadPhoto()" />
@@ -42,15 +49,27 @@
     </div>
   </div>
 
-  <div id="modal" class="modal bg-black opacity-40 z-10"></div>
+  <div id="modal" class="modal bg-black opacity-40"></div>
 
   <div id="dlgResult" class="modal p-4">
     <div class="dialog relative">
       <img id="result" alt="" />
       <div class="flex flex-row items-center justify-end">
         <div class="grow p-4">下載或分享成果</div>
-        <img id="btnSave" class="mr-2" src="https://api.iconify.design/lucide/save.svg?color=%23243c5a&width=34" alt="load photo" onclick="file.click()" />
-        <img id="btnShare" class="mr-4" src="https://api.iconify.design/ri/share-line.svg?color=%23243c5a&width=34" alt="load photo" onclick="file.click()" />
+        <img 
+          id="btnSave" 
+          alt="Save" 
+          class="mr-2" 
+          src="https://api.iconify.design/lucide/save.svg?color=%23243c5a&width=34" 
+          onclick="onSave()" 
+          />
+        <img 
+          id="btnShare" 
+          alt="Share" 
+          class="mr-4" 
+          src="https://api.iconify.design/ri/share-line.svg?color=%23243c5a&width=34" 
+          onclick="onShare()" 
+          />
       </div>
       <img
         id="btnClearResult"
@@ -99,7 +118,7 @@
       
       // result dialog
       const dialog = document.getElementById('dialog');
-      const loading = document.getElementById('loading');
+      const loading = Array.from(document.getElementsByClassName('loading'));
       const result = document.getElementById('result');
 
       // live
@@ -125,7 +144,7 @@
           dlgTerm.style.display = 'flex';
           modal.style.display = 'flex';
 
-          loading.style.display = 'none';
+          loading.forEach(i => i.style.display = 'none');
           video.style.display = 'none';
           source.style.display = 'none';
           btnCapture.style.display = 'none';
@@ -147,14 +166,14 @@
           btnLoadPhoto.style.display = 'none';
           btnGenerate.style.display = 'none';
           dlgResult.style.display = 'none';
-          loading.style.display = 'none';
+          loading.forEach(i => i.style.display = 'none');
         }
 
         if(stage === 'editing') {
           dlgTerm.style.display = 'none';
           dlgResult.style.display = 'none';
           modal.style.display = 'none';
-          loading.style.display = 'none';
+          loading.forEach(i => i.style.display = 'none');
 
           // handle video
           if(term && sourceImage === null && video.isConnected) {
@@ -180,7 +199,7 @@
         
         // handle loading
         if(stage === 'generating') {
-          loading.style.display = 'flex';
+          loading.forEach(i => i.style.display = 'flex');
           dlgTerm.style.display = 'none';
           dlgResult.style.display = 'none';
           modal.style.display = 'none';
@@ -199,7 +218,7 @@
         if(stage === 'preview') {
           dlgResult.style.display = 'flex';
           modal.style.display = 'flex';
-          loading.style.display = 'none';
+          loading.forEach(i => i.style.display = 'none');
           dlgTerm.style.display = 'none';
           video.style.display = 'none';
           btnCapture.style.display = 'none';
@@ -245,22 +264,24 @@
 
       function connectCamera(config) {
         if(_cameraConnected) return;
+        if(noCamera()) return;
           
         const mediaConfig = { video: config };
-        
-        navigator
-            .mediaDevices
-            .getUserMedia(mediaConfig)
-            .then(stream => {
-                video.srcObject = stream;
-                video.play();
-                _cameraConnected = true;
-            })
-            .catch(err => {
-              alert('Camera not available.');
-              console.error("Error: " + err);
-              _cameraConnected = false;
-            });
+
+        if(!!navigator?.mediaDevices?.getUserMedia)
+          navigator
+              .mediaDevices
+              .getUserMedia(mediaConfig)
+              .then(stream => {
+                  video.srcObject = stream;
+                  video.play();
+                  _cameraConnected = true;
+              })
+              .catch(err => {
+                alert('Camera not available.');
+                console.error("Error: " + err);
+                _cameraConnected = false;
+              });
       }
 
       function disconnectCamera(config) {
@@ -268,10 +289,18 @@
         _cameraConnected = false;
       }
 
+      function noCamera() {
+        return navigator?.mediaDevices?.getUserMedia === 'undefined';
+      }
+
       function onAccept() { setState({...state, term: true, stage: 'editing'})}
       function onDeny() { setState({...state, term: false, stage: 'denied' })}
 
       function onTakePhoto() {
+        if(noCamera()) {
+          file.click();
+          return;
+        }
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -341,7 +370,7 @@
               }
           }
 
-          const sdapi = new SDAPI('http://ai.printii.com');
+          const sdapi = new SDAPI('https://ai.printii.com');
           const [ swappedImage ] = await sdapi.img2img(characterImage, configs);
           const [ resultb64Image ] = await sdapi.img2img(swappedImage, { 
               width: state.width,
@@ -357,6 +386,41 @@
           const resultImage = b64Raw2ImageURL(resultb64Image);
 
           setState({...state, stage: 'preview', resultImage});
+      }
+
+      async function onSave() {
+        const { resultImage } = state;
+        let link = document.createElement('a');
+        link.download = 'gezi-photo.png';
+        link.href = resultImage;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      async function onShare() {
+        const { resultImage } = state;
+          
+        try{
+          if(!resultImage) 
+            throw new Error('讀取圖片時發生錯誤。');
+        
+          const blob = await(await fetch(resultImage)).blob();
+          const file = new File([blob], `gezi-photo.png`, { type: blob.type });
+          const shareData = {
+            title: '國光劇團 - 魔幻京劇系列',
+            text: '我的京劇扮相',
+            files: [file]
+          };
+
+          if(!navigator.canShare(shareData))
+            throw new Error('很抱歉，您的裝置不支援分享功能');
+
+          await navigator.share(shareData);
+        }catch(err){
+          console.error(err);
+          alert(err.message);
+        }
       }
 
       function onClearResult() {

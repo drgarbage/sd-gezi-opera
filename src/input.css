@@ -13,7 +13,7 @@
     @apply border-blue-400 opacity-100
   }
   .modal {
-    @apply absolute top-0 w-screen h-dvh flex flex-col items-center justify-center z-10
+    @apply absolute top-0 w-screen h-dvh flex flex-col items-center justify-center z-50
   }
   .dialog {
     @apply overflow-clip rounded-2xl bg-white
