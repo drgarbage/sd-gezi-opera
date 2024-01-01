@@ -1,8 +1,17 @@
 <!doctype html>
 <html>
 <head>
+  <title>國光劇團 - 魔幻京劇系列</title>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name='description' content='使用 AI 繪圖技術製作個人專屬京劇劇照, 國光劇團, 京劇, AIGC, 生成世 AI, Stable Diffusion' />
+  <meta name='robot' content='index,follow' />
+  <meta name="apple-mobile-web-app-title" content="國光劇團 - 魔幻京劇系列" />
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1.0, user-scalable=no" />
+  <!-- <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="apple-touch-startup-image" href="/apple-touch-icon.png" /> -->
   <link href="css/default.css" rel="stylesheet">
 </head>
 <body class="overflow-hidden">
@@ -14,8 +23,8 @@
           點此上傳照片
         </div>
       </div>
-      <video id="video" class="preview z-20 flip-h" playsinline></video>
-      <img id="source" class="preview z-20" alt="Source Image" />
+      <video id="video" class="preview z-50 flip-h" playsinline></video>
+      <img id="source" class="preview z-50" alt="Source Image" />
       <img 
         id="btnFlip"
         class="absolute top-4 right-4" 
@@ -105,6 +114,7 @@
       const avatarList = document.getElementById('avatarList');
       const source = document.getElementById('source');
       const file = document.getElementById('file');
+      const btnManual = document.getElementById('btnManual');
       const btnCapture = document.getElementById('btnCapture');
       const btnFlip = document.getElementById('btnFlip');
       const btnReCapture = document.getElementById('btnReCapture');
@@ -183,6 +193,7 @@
           }
           video.className = facingMode === 'user' ? 'preview flip-h' : 'preview';
           video.style.display = term && sourceImage === null ? 'inherit' : 'none';
+          btnManual.style.display = noCamera() ? 'flex' : 'none';
           btnCapture.style.display = term && sourceImage === null ? 'block' : 'none';
           btnFlip.style.display = term && sourceImage === null ? 'block' : 'none';
           btnLoadPhoto.style.display = term && sourceImage === null ? 'block' : 'none';
@@ -290,7 +301,7 @@
       }
 
       function noCamera() {
-        return navigator?.mediaDevices?.getUserMedia === 'undefined';
+        return !navigator?.mediaDevices?.getUserMedia;
       }
 
       function onAccept() { setState({...state, term: true, stage: 'editing'})}
@@ -370,7 +381,11 @@
               }
           }
 
-          const sdapi = new SDAPI('https://ai.printii.com');
+          const sdapi = new SDAPI(
+              window.location.href.startsWith('https') ? 
+                'https://ai.printii.com' : 
+                'http://ai.printii.com'
+            );
           const [ swappedImage ] = await sdapi.img2img(characterImage, configs);
           const [ resultb64Image ] = await sdapi.img2img(swappedImage, { 
               width: state.width,
