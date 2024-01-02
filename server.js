@@ -205,7 +205,6 @@ const adaptGet = async (route, req, res) => {
 
 const adaptPost = async (route, req, res) => {
   try { 
-    console.log(req.body);
     const response = await axios.post(`${sdapihost}${route}`, req.body, {
       headers: {
         'Accept': 'application/json',
