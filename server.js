@@ -6,6 +6,8 @@ const path1 = require('path');
 
 const multer = require('multer');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const { default: axios } = require('axios');
 
 const app = express();
 const port = 3001;
@@ -19,6 +21,7 @@ const corsOptions = {
 
 // 使用 cors 中介軟體
 app.use(cors(corsOptions));
+app.use(bodyParser.json({limit: '50mb'}));
 
 app.use(express.static(path1.join(__dirname, 'uploads')));
 const fileCount = 0;
@@ -175,6 +178,65 @@ app.post('/client-upload-image', r_upload.single('image'), (req, res) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+// --- adapt to sdapi
+// const sdapihost = 'http://localhost:7860';
+const sdapihost = 'http://ai.printii.com';
+const adaptGet = async (route, req, res) => {
+  try{
+    const response = await axios.get(`${sdapihost}${route}`, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if(response.status !== 200) {
+      res.status(response.status).send({message: 'Network Error'});
+      return;
+    }
+
+    res.send(response.data);
+  }catch(err){
+    console.error(err.message);
+    res.status(500).send({message: 'Internal Server Error'});
+  }
+}
+
+const adaptPost = async (route, req, res) => {
+  try { 
+    console.log(req.body);
+    const response = await axios.post(`${sdapihost}${route}`, req.body, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    });
+  
+    if(response.status !== 200) {
+      res.status(response.status).send({message: 'Network Error'});
+      return;
+    }
+  
+    res.send(response.data);
+
+  } catch(err) {
+    console.error(err.message);
+    res.status(500).send({message: 'Internal Server Error'});
+  }
+}
+
+app.post('/sdapi/v1/img2img', (req, res) => 
+  adaptPost('/sdapi/v1/img2img', req, res));
+
+app.post('/sdapi/v1/extra-single-image', (req, res) => 
+  adaptPost('/sdapi/v1/extra-single-image', req, res));
+
+app.post('/reactor/image', (req, res) => 
+  adaptPost('/reactor/image', req, res));
+
+app.get('/sdapi/v1/sd-models', (req, res) => 
+  adaptGet('/sdapi/v1/sd-models', req, res));
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
