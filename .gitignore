@@ -1,4 +1,5 @@
 /node_modules
 /current_photo
+/upload
 SSH_KEY.txt
 save_pid.txt
