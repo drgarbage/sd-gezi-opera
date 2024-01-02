@@ -116,8 +116,6 @@ class SDAPI {
         });
         const result = response.body;
         
-        console.log(result);
-        
         return result;
     }
 }
