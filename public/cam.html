@@ -157,6 +157,7 @@
           loading.forEach(i => i.style.display = 'none');
           video.style.display = 'none';
           source.style.display = 'none';
+          avatarList.style.display = 'none';
           btnCapture.style.display = 'none';
           btnFlip.style.display = 'none';
           btnReCapture.style.display = 'none';
@@ -170,6 +171,7 @@
           modal.style.display = 'none';
           video.style.display = 'none';
           source.style.display = 'none';
+          avatarList.style.display = 'none';
           btnCapture.style.display = 'none';
           btnFlip.style.display = 'none';
           btnReCapture.style.display = 'none';
@@ -180,6 +182,7 @@
         }
 
         if(stage === 'editing') {
+          avatarList.style.display = 'flex';
           dlgTerm.style.display = 'none';
           dlgResult.style.display = 'none';
           modal.style.display = 'none';
@@ -215,6 +218,7 @@
           dlgResult.style.display = 'none';
           modal.style.display = 'none';
           video.style.display = 'none';
+          avatarList.style.display = 'none';
           btnCapture.style.display = 'none';
           btnFlip.style.display = 'none';
           btnLoadPhoto.style.display = 'none';
@@ -232,6 +236,7 @@
           loading.forEach(i => i.style.display = 'none');
           dlgTerm.style.display = 'none';
           video.style.display = 'none';
+          avatarList.style.display = 'none';
           btnCapture.style.display = 'none';
           btnFlip.style.display = 'none';
           btnLoadPhoto.style.display = 'none';
@@ -268,9 +273,10 @@
           avatarList.appendChild(img);
 
           if(index === 0)
-            selectedAvatar = img.src;
+            img.onload = function() {
+              img.click()
+            }
         });
-        setState({...state, selected: selectedAvatar});
       }
 
       function connectCamera(config) {
