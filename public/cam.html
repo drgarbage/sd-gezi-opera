@@ -23,6 +23,12 @@
           點此上傳照片
         </div>
       </div>
+      <div id="msgNoAuth" class="absolute preview z-10 flex flex-col items-center justify-center">
+        <div class="text-white text-lg mt-4">
+          您已拒絕隱私條款。
+        </div>
+        <button class="text-white" onclick="location.reload()">重新整理</button>
+      </div>
       <video id="video" class="preview z-50 flip-h" playsinline></video>
       <img id="source" class="preview z-50" alt="Source Image" />
       <img 
@@ -123,6 +129,7 @@
       const modal = document.getElementById('modal');
       const dlgTerm = document.getElementById('dlgTerm');
       const dlgResult = document.getElementById('dlgResult');
+      const msgNoAuth = document.getElementById('msgNoAuth');
 
       const avatarFiles = [...new Array(23).keys()].map(i => `/photos/image_${i+1}.jpg`);
       
@@ -148,6 +155,8 @@
 
       function setState(nextState) {
         const {stage, facingMode, term, selected, sourceImage, resultImage } = nextState;
+        
+        msgNoAuth.style.display = 'none';
 
         if(stage === 'prepare') {
           // handle term
@@ -158,6 +167,7 @@
           video.style.display = 'none';
           source.style.display = 'none';
           avatarList.style.display = 'none';
+          btnManual.style.display = 'none';
           btnCapture.style.display = 'none';
           btnFlip.style.display = 'none';
           btnReCapture.style.display = 'none';
@@ -167,11 +177,13 @@
         }
 
         if(stage === 'denied') {
+          msgNoAuth.style.display = 'flex';
           dlgTerm.style.display = 'none';
           modal.style.display = 'none';
           video.style.display = 'none';
           source.style.display = 'none';
           avatarList.style.display = 'none';
+          btnManual.style.display = 'none';
           btnCapture.style.display = 'none';
           btnFlip.style.display = 'none';
           btnReCapture.style.display = 'none';
@@ -219,6 +231,7 @@
           modal.style.display = 'none';
           video.style.display = 'none';
           avatarList.style.display = 'none';
+          btnManual.style.display = 'none';
           btnCapture.style.display = 'none';
           btnFlip.style.display = 'none';
           btnLoadPhoto.style.display = 'none';
@@ -237,6 +250,7 @@
           dlgTerm.style.display = 'none';
           video.style.display = 'none';
           avatarList.style.display = 'none';
+          btnManual.style.display = 'none';
           btnCapture.style.display = 'none';
           btnFlip.style.display = 'none';
           btnLoadPhoto.style.display = 'none';
