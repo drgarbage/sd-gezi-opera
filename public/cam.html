@@ -381,11 +381,7 @@
               }
           }
 
-          const sdapi = new SDAPI(
-              window.location.href.startsWith('https') ? 
-                'https://ai.printii.com' : 
-                'http://ai.printii.com'
-            );
+          const sdapi = new SDAPI('');
           const [ swappedImage ] = await sdapi.img2img(characterImage, configs);
           const [ resultb64Image ] = await sdapi.img2img(swappedImage, { 
               width: state.width,
