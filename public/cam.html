@@ -410,9 +410,9 @@
               negative_prompt: '(worse quality:2), (bad quality:2), (normal quality:1.5), 3d',
               cfg_scale: 9,
               denoising_strength: 0.3,
-              // override_settings: {
-              //   sd_model_checkpoint: ''
-              // }
+              override_settings: {
+                sd_model_checkpoint: 'ddd3b969b7'
+              }
           });
           const resultImage = b64Raw2ImageURL(resultb64Image);
 
