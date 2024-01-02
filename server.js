@@ -180,8 +180,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // --- adapt to sdapi
-// const sdapihost = 'http://localhost:7860';
-const sdapihost = 'http://ai.printii.com';
+const sdapihost = 'http://localhost:7860';
 const adaptGet = async (route, req, res) => {
   try{
     const response = await axios.get(`${sdapihost}${route}`, {
